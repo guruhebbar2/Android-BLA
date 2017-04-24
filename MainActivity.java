@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -32,7 +34,11 @@ public class MainActivity extends Activity {
     Button expiredLicBtn;
     String responseData;
     String result;
-    String strUrl = "http://www.telusko.com/addition.htm?t1=3&t2=10";
+    String strUrl = "https://192.168.0.179:9000/gatewayService/admin/";
+
+    String postUrl1 = "http://requestb.in/1c904sh1";
+    String postUrl2 = "http://requestb.in/1l037y71";
+
     public static final String editTextKey = "etxtKey";
     public static final String myPref = "MyPref" ;
     SharedPreferences sharedPreferences ;
@@ -58,7 +64,7 @@ public class MainActivity extends Activity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         String changeUrl = urlText.getText().toString();
         editor.putString(editTextKey,changeUrl);
-        editor.commit();
+        editor.apply();
 
 
         Toast.makeText(this, "Url Changed to : " + sharedPreferences.getString(editTextKey,null), Toast.LENGTH_SHORT).show();
@@ -103,32 +109,19 @@ public class MainActivity extends Activity {
 
         @Override
         protected String doInBackground(String... params) {
-            sharedPreferences = getSharedPreferences(myPref,Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            String changeUrl = sharedPreferences.getString(editTextKey,strUrl);
+
             try {
-                URL url = new URL(changeUrl);
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("GET");
-                con.connect();
+                getCall();
 
-                BufferedReader bufferReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                responseData = bufferReader.readLine();
-                String line = "";
-                result = "";
-                while((line = bufferReader.readLine()) != null)
-                    result += line;
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("para_1", "arg_1");
+                jsonObject.put("para_2", "arg_2");
+                String jsonString = jsonObject.toString();
 
-                System.out.println(bufferReader.toString());
-                Log.i("Guru",result);
-                con.disconnect();
                 String data = "{"+"data"+":"+"hello"+"}";
-                String data1 ="{"+"data"+":"+"Blahblahblah"+"}";
-                postRes1 = postCall("http://requestb.in/zveiufzv",data) + "i went 1st";
-                postRes2 = postCall("http://requestb.in/1l037y71",data1)+ "i went 2nd";
-
-
-
+                String data1 ="{"+"data"+":"+"Google"+"}";
+                postRes1 = postCall(postUrl1,jsonString) + "i went 1st";
+                postRes2 = postCall(postUrl2,data1)+ "i went 2nd";
 
             } catch (Exception e) {
                 System.out.println(e);
@@ -156,7 +149,7 @@ public class MainActivity extends Activity {
                 String line = "";
                 while((line = bufferReader.readLine()) != null)
                     text += line;
-
+                Log.i("Weeee",postUrl);
                 conn.disconnect();
             } catch (Exception e) {
 
@@ -167,8 +160,29 @@ public class MainActivity extends Activity {
         }
 
         public void getCall(){
+           try {
+               sharedPreferences = getSharedPreferences(myPref, Context.MODE_PRIVATE);
+               SharedPreferences.Editor editor = sharedPreferences.edit();
+               String changeUrl = sharedPreferences.getString(editTextKey, strUrl);
+               URL url = new URL(changeUrl);
+               HttpURLConnection con = (HttpURLConnection) url.openConnection();
+               con.setRequestMethod("GET");
+               con.setConnectTimeout(1000);
+               con.connect();
 
+               BufferedReader bufferReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+               responseData = bufferReader.readLine();
+               String line = "";
+               result = "";
+               while ((line = bufferReader.readLine()) != null)
+                   result += line;
 
+               Log.i("telusko",responseData);
+               Log.i("Guru", result);
+               con.disconnect();
+           }catch (Exception e){
+               System.out.println(e);
+           }
         }
     }
 
