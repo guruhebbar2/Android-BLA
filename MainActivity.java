@@ -11,14 +11,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 
 public class MainActivity extends Activity {
     EditText urlText ;
+    String text = "";
+    String postRes1;
+    String postRes2;
+
     Button urlButton;
     Button validLicBtn;
     Button invalidLicBtn;
@@ -80,6 +87,8 @@ public class MainActivity extends Activity {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             String changeUrl = sharedPreferences.getString(editTextKey,strUrl);
             Toast.makeText(MainActivity.this, "Connecting url :" + changeUrl , Toast.LENGTH_SHORT).show();
+
+
             super.onPreExecute();
         }
 
@@ -87,6 +96,9 @@ public class MainActivity extends Activity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             Toast.makeText(MainActivity.this, "Response Result :" + result, Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Post Successful : " + postRes1, Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Post Successful : " + postRes2, Toast.LENGTH_SHORT).show();
+
         }
 
         @Override
@@ -110,14 +122,53 @@ public class MainActivity extends Activity {
                 System.out.println(bufferReader.toString());
                 Log.i("Guru",result);
                 con.disconnect();
+                String data = "{"+"data"+":"+"hello"+"}";
+                String data1 ="{"+"data"+":"+"Blahblahblah"+"}";
+                postRes1 = postCall("http://requestb.in/zveiufzv",data) + "i went 1st";
+                postRes2 = postCall("http://requestb.in/1l037y71",data1)+ "i went 2nd";
 
-                
+
+
 
             } catch (Exception e) {
                 System.out.println(e);
             }
 
             return null;
+        }
+
+        public String postCall(String postUrl,String data){
+            InputStream inputStream = null;
+            String result = "";
+            try {
+
+                URL url = new URL(postUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Content-Type", "application/json");
+                OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+                wr.write( data );
+                wr.flush();
+
+
+                BufferedReader bufferReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String responseData = bufferReader.readLine();
+                String line = "";
+                while((line = bufferReader.readLine()) != null)
+                    text += line;
+
+                conn.disconnect();
+            } catch (Exception e) {
+
+                System.out.println(e.getMessage());
+
+            }
+            return text;
+        }
+
+        public void getCall(){
+
+
         }
     }
 
